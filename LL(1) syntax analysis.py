@@ -15,60 +15,91 @@ pat = {
     ('B', ')'): '#',
     ('B', '$'): '#',
     ('F', 'i'): 'i',
-    ('F', '('): '(E)'
+    ('F', '('): '(E)',
+    ('E', ')'): 'synch',
+    ('E', '$'): 'synch',
+    ('T', '+'): 'synch',
+    ('T', ')'): 'synch',
+    ('T', '$'): 'synch',
+    ('F', '*'): 'synch',
+    ('F', '+'): 'synch',
+    ('F', ')'): 'synch',
+    ('F', '$'): 'synch'
 }
 # 终结符集合
 ts = ('i', '(', '+', '*', ')')
 # 非终结符集合
 ns = ('E', 'A', 'T', 'B', 'F')
 
-def predictiveAnalysis(str):
-        # 栈和指针
-        stack = []
-        location = 0
-        #将$压入栈中
-        stack.append('$')
-        #将文法的开始符号压入栈
-        stack.append('E')
-        # 将输入串第一个字符读入a中
-        a = str[location]
-        # 令X等于栈顶符号
-        X = stack[-1]
-        flag = True
 
-        while flag:
-            if X == a:
-                if(a != '$'):
-                    location += 1
-                    a = str[location]
-                stack.pop()           
-            elif X in ts:
+def predictiveAnalysis(strin):
+    # 栈和指针
+    stack = []
+    mate = []
+    location = 0
+    # 将$压入栈中
+    stack.append('$')
+    # 将文法的开始符号压入栈
+    stack.append('E')
+    # 将输入串第一个字符读入a中
+    a = strin[location]
+    # 令X等于栈顶符号
+    X = stack[-1]
+    flag = True
+    o = 1
+
+    while flag:     
+        if X == a:
+            if(a != '$'):
+                location += 1
+                a = strin[location]
+                m = stack.pop()
+                mate.append(m)
+                print('匹配',a)
+        elif X in ts:
+            stack.pop()
+            o = 0
+            print('错误，栈顶为终结符')
+        elif (X, a) not in pat.keys() and a in ts:
+            location += 1
+            a = strin[location]
+            o = 0
+            print('错误，略过')
+        elif (X, a) in pat.keys():
+            k = (X, a)
+            if pat[k] == 'Error':
                 return 0
-            elif (X, a) in pat.keys():
-                k = (X, a)
-                if pat[k] == 'Error':
-                    return 0
-                else:
-                    yStr = pat[k][::-1]
-                    stack.pop()
-                    for i in range(len(yStr)):
-                        if(yStr[i] != '#'):
-                            stack.append(yStr[i])   
+            elif pat[k] == 'synch':
+                Y = stack.pop()
+                o = 0
+                print('错误，',k,'= synch   '+Y+'已经被弹出栈')
             else:
-                return 0         
-            X = stack[-1]
-            if X == '$':
-                flag = False
-        return 1
+                yStr = pat[k][::-1]
+                ao = stack.pop()
+                print('输出'+ao+'->'+pat[k])
+                for i in range(len(yStr)):
+                    if(yStr[i] != '#'):
+                        stack.append(yStr[i])
+        else:
+            location += 1
+            a = strin[location]
+            o = 0
+            print('此符号非预测分析表终结符')
+        X = stack[-1]
+        if X == '$':
+            flag = False
+    return o
 
-def init(str):
+
+def init(strin):
     '''
     输入串的初始化，尾部加上$
     '''
-    str = str + '$'
-    return str
+    strin = strin + '$'
+    return strin
 
-str = 'i+i*i'
+
+str = 'i+++i'
 str = init(str)
 out = predictiveAnalysis(str)
 if out == 1:
