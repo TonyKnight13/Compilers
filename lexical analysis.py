@@ -1,7 +1,7 @@
 '''
 词法分析器
+python 3.6.1
 '''
-
 
 class DFA:
     file_object = ''
@@ -91,7 +91,7 @@ class DFA:
                     else:
                         content = 'ERROR:行号为' + \
                             str(self.lineNum) + ',' + ch + '字符不可识别'
-                        self.charMessage.append(content)
+                        self.errorMessage.append(content)
                         self.state = -1
                 elif self.state == 10:
                     if ch.isalpha():
@@ -114,14 +114,14 @@ class DFA:
                         self.state = 11
                     elif ch.isalpha():
                         content = 'ERROR:行号为' + str(self.lineNum) + ',' + ch
-                        self.charMessage.append(content)
+                        self.errorMessage.append(content)
                         string = ''
                         self.state = -1
                     else:
                         if (string[0] == '0' and len(string) > 1):
                             content = 'ERROR:行号为' + \
-                                str(self.lineNum) + ',' + string + '的首位为零'
-                            self.charMessage.append(content)
+                                str(self.lineNum) + ',' + string + '的首位为0'
+                            self.errorMessage.append(content)
                             string = ''
                             self.state = -1
                             i -= 1
@@ -181,8 +181,11 @@ class DFA:
 fileobject = open("C:\\Users\\Administrator\\Desktop\\test.txt")
 dfa = DFA(fileobject)
 dfa.Convert()
-content = dfa.getChar()
-for item in content:
+charcontent = dfa.getChar()
+errorcontent = dfa.getError()
+for item in charcontent:
+    print(item)
+for item in errorcontent:
     print(item)
 
 fileobject.close()

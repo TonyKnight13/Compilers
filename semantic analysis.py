@@ -1,7 +1,16 @@
+'''
+语义分析——符号表信息登录 
+python 3.6.1
+'''
+
 import collections
 
 
 class s:
+    '''
+    词法分析输出的对象
+    '''
+
     def __init__(self, strs, state):
         self.strname = strs
         self.state = state
@@ -64,6 +73,10 @@ class lexer:
 
 
 class stitem:
+    '''
+    符号表的表项
+    '''
+
     def __init__(self, name, typename, offset):
         self.name = name
         self.typename = typename
@@ -71,20 +84,26 @@ class stitem:
 
 
 class tbl:
-    tbl = collections.OrderedDict()
+    '''
+    符号表
+    '''
+    tbl = collections.OrderedDict()  # 有序字典
 
     def __init__(self, width=None):
         self.width = width
 
-    def pop(self):
+    def pop(self):  # 栈的pop操作
         popitem = self.tbl.popitem()
         return popitem
 
-    def push(self, item):
+    def push(self, item):  # 栈的push操作
         self.tbl[item.name] = item
 
 
 def mktable(previous):
+    '''
+    创建一张新的符号表，并返回指向新表的指针。参数previous指向先前创建的符号，放在新符号表的表头。
+    '''
     table = tbl()
     if previous.name == '':
         return table
@@ -94,22 +113,31 @@ def mktable(previous):
 
 
 def enter(table, name, typename, offset):
+    '''
+    在table指向的符号表中为名字name建立新表项，同时将类型type及相对地址offset放入该表项的属性域中。
+    '''
     item = stitem(name, typename, offset)
     table.push(item)
 
 
 def addwidth(table, width):
+    '''
+    将table指向的符号表中所有表项的宽度之和记录在与符号表关联的表头中。
+    '''
     table.width = width
 
 
 def enterproc(table, name, newtable):
+    '''
+    在table指向的符号表中为过程name建立一个新表项，参数newtable指向过程name的符号表。
+    '''
     table[name] = newtable
     return table
 
 
 class sa:
-    tblptrStack = []
-    offsetStack = []
+    tblptrStack = []  # 保存指向外围过程符号表的指针。
+    offsetStack = []  # 其栈顶元素是下一个当前过程中局部对象可用的相对地址。
 
     def __init__(self, strItemList):
         self.strItemList = strItemList
@@ -120,7 +148,7 @@ class sa:
         addwidth(self.tblptrStack[-1], self.offsetStack[-1])
         popoffset = self.offsetStack.pop()
         poptable = self.tblptrStack.pop()
-        return poptable, popoffset
+        return poptable
 
     def M(self):
         table = tbl()
@@ -171,9 +199,7 @@ lexer = lexer(strs)
 lexer.convert()
 stritemList = lexer.getstritemList()
 sa = sa(stritemList[::-1])
-table, offset = sa.P()
+table = sa.P()
+print('name'+' '+'type'+'         '+'offset')
 for v in table.tbl.values():
-    print('name:' + v.name)
-    print('type:' + v.typename)
-    print('offset:' + str(v.offset))
-print(offset)
+    print("%-5s%-13s%-10d"%(v.name,v.typename,v.offset))

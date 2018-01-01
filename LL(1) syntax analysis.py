@@ -1,5 +1,6 @@
 '''
 LL(1)文法分析器
+python 3.6.1
 '''
 # 预测分析表
 pat = {
@@ -46,24 +47,24 @@ def predictiveAnalysis(strin):
     # 令X等于栈顶符号
     X = stack[-1]
     flag = True
-    o = 1
+    out = 1
 
-    while flag:     
+    while flag:
         if X == a:
             if(a != '$'):
                 location += 1
                 a = strin[location]
                 m = stack.pop()
                 mate.append(m)
-                print('匹配',a)
+                print('匹配', a)
         elif X in ts:
             stack.pop()
-            o = 0
+            out = 0
             print('错误，栈顶为终结符')
         elif (X, a) not in pat.keys() and a in ts:
             location += 1
             a = strin[location]
-            o = 0
+            out = 0
             print('错误，略过')
         elif (X, a) in pat.keys():
             k = (X, a)
@@ -71,24 +72,24 @@ def predictiveAnalysis(strin):
                 return 0
             elif pat[k] == 'synch':
                 Y = stack.pop()
-                o = 0
-                print('错误，',k,'= synch   '+Y+'已经被弹出栈')
+                out = 0
+                print('错误，', k, '= synch   ' + Y + '已经被弹出栈')
             else:
                 yStr = pat[k][::-1]
                 ao = stack.pop()
-                print('输出'+ao+'->'+pat[k])
+                print('输出' + ao + '->' + pat[k])
                 for i in range(len(yStr)):
                     if(yStr[i] != '#'):
                         stack.append(yStr[i])
         else:
             location += 1
             a = strin[location]
-            o = 0
+            out = 0
             print('此符号非预测分析表终结符')
         X = stack[-1]
         if X == '$':
             flag = False
-    return o
+    return out
 
 
 def init(strin):
